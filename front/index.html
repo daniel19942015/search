@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search</title>
+    <link rel="stylesheet" type="text/css" href="./index.css" />
+</head>
+
+<body>
+
+    <header>
+        <div id="search">
+            <input type="text" id="searching">
+            <img src="search.png" alt="search">
+        </div>
+        <div id="results"></div>
+    </header>
+
+    <article>
+        <div id="resposta">
+            <div>
+                <span>Nome:</span>
+                <span id="name">daniel</span>
+            </div>
+            <div>
+                <span>E-mail: </span>
+                <span id="mail">daniel</span>
+            </div>
+            <div>
+                <span>Cidade: </span>
+                <span id="city">daniel</span>
+            </div>
+        </div>
+    </article>
+
+
+    <script>
+
+        let search = document.getElementById("searching");
+        let results = document.getElementById("results");
+        let clientes = document.getElementsByClassName("nome");
+        let respostas = document.getElementById("resposta");
+        let nomes = document.getElementById("name");
+        let mail = document.getElementById("mail");
+        let city = document.getElementById("city");
+
+        async function request(url, value) {
+
+            try {
+                let resp = await fetch(url, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        text: value
+                    }),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                return await resp.json()
+
+            } catch (error) {
+                console.log(error)
+                return false;
+            }
+
+        }
+
+        async function montarInfo(id){
+            let url = "http://localhost:3000/" + id 
+            let res = await request(url, id)
+
+            nomes.innerHTML = res[0].nome
+            mail.innerHTML = res[0].email
+            city.innerHTML = res[0].cidade
+
+
+            search.value = res[0].nome;
+            respostas.style.display = "block"
+            results.style.display = "none"
+        }
+
+        function readElements(){
+            if(clientes.length > 0){
+                for(cli of clientes){
+                    cli.addEventListener("click", function(){
+                        montarInfo(this.id)
+                    })
+                }
+            }
+        }
+
+        search.addEventListener("keyup", async function (event) {
+            let value = this.value;
+            results.style.display = "flex"
+            let url = "http://localhost:3000"
+
+            setTimeout(async () => {
+                if(value !== ""){
+                    const res = await request(url, value)
+                    results.innerText = ""
+                    for(response of res){
+                        let div = document.createElement("div");
+                        div.className = "nome";
+                        div.id = response.id
+                        div.innerHTML = response.nome;
+                        results.appendChild(div)
+                    }
+                }else{
+                    results.style.display = "none"
+                }
+
+                readElements()
+            }, 1000)
+        })
+    
+
+    </script>
+</body>
+
+</html>
